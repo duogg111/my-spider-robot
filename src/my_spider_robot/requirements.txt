@@ -1,0 +1,4 @@
+pyyaml
+smbus2
+gpiozero
+lgpio

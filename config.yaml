@@ -1,0 +1,44 @@
+# config.yaml - cấu hình hexapod 18 servo MG996R, 2x PCA9685 (I2C)
+# Quy ước hệ trục thân: x = phía trước, y = bên trái, góc dương = ngược chiều kim đồng hồ nhìn từ trên.
+# Quy ước góc khớp (đơn vị độ, 0 = tư thế trung tính khi servo ở 90°):
+#   coxa  : + = chân xoay về phía trước
+#   femur : + = nhấc đùi lên
+#   tibia : + = duỗi cẳng ra
+# Nếu thực tế ngược chiều thì đổi `invert`, đừng sửa code.
+
+i2c:
+  bus: 1
+  boards: [0x40, 0x41]     # board 0 = 0x40, board 1 = 0x41 (hàn jumper A0)
+  pwm_freq_hz: 50
+  osc_hz: 25000000         # chỉnh nếu xung thực tế lệch (đo bằng oscilloscope/logic analyzer)
+  oe_gpio: 17              # BCM GPIO nối chung 2 chân OE (mức cao = tắt xung). null nếu không dùng
+
+servo:
+  model: MG996R
+  pulse_min_us: 500        # xung ứng với 0°. MG996R thật thường ~500-600
+  pulse_max_us: 2500       # xung ứng với range_deg. Thường ~2400-2500
+  range_deg: 180
+  center_deg: 90
+  min_deg: 20              # giới hạn an toàn cứng (góc servo)
+  max_deg: 160
+  max_speed_dps: 180       # giới hạn tốc độ đổi góc (độ/giây) để tránh giật dòng
+
+# Kích thước chân (mm) - ƯỚC LƯỢNG từ ảnh, hãy đo lại bằng thước kẹp
+# (khoảng cách giữa các trục xoay; tibia đo tới mũi móng vuốt)
+geometry:
+  coxa_mm: 50
+  femur_mm: 90
+  tibia_mm: 130
+  body_radius_mm: 80       # từ tâm thân tới trục coxa
+  stand_height_mm: 90      # chiều cao thân khi đứng (dùng ở bước IK)
+
+# 6 chân, đánh số đi vòng quanh thân. Mỗi chân 3 servo: [coxa, femur, tibia]
+# Chân phải (0-2) -> board 0 (0x40) kênh 0-8. Chân trái (3-5) -> board 1 (0x41) kênh 0-8.
+# Nhóm tripod: A = chân 0, 2, 4 ; B = chân 1, 3, 5
+legs:
+  - {name: front_right, mount_angle_deg: -30,  board: 0, channels: [0, 1, 2],   invert: [false, false, false], offsets_deg: [0, 0, 0]}
+  - {name: mid_right,   mount_angle_deg: -90,  board: 0, channels: [3, 4, 5],   invert: [false, false, false], offsets_deg: [0, 0, 0]}
+  - {name: rear_right,  mount_angle_deg: -150, board: 0, channels: [6, 7, 8],   invert: [false, false, false], offsets_deg: [0, 0, 0]}
+  - {name: rear_left,   mount_angle_deg: 150,  board: 1, channels: [0, 1, 2],   invert: [true, true, true],    offsets_deg: [0, 0, 0]}
+  - {name: mid_left,    mount_angle_deg: 90,   board: 1, channels: [3, 4, 5],   invert: [true, true, true],    offsets_deg: [0, 0, 0]}
+  - {name: front_left,  mount_angle_deg: 30,   board: 1, channels: [6, 7, 8],   invert: [true, true, true],    offsets_deg: [0, 0, 0]}
